@@ -12,8 +12,13 @@ sudo apt-get install libgmp3-dev -y
 # Install mysql client
 sudo apt-get install mysql-client libmysqlclient-dev -y
 
-./kafka.sh
+# Setup/prepare all databases.
+./db/setup-db.sh
 
-./go.sh
+# Download/extract kafka.
+./kafka/get-kafka.sh
 
-./db/mysql.sh
+# Build go server.
+cd "$ROOT/.."
+rm -rf bin && mkdir bin
+go build -o bin/server cmd/main.go

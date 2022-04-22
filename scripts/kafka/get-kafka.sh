@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ROOT="$(dirname "$0")"
-cd "$ROOT/.."
+cd "$ROOT/../.."
 
 # Download and extract Kafka, version 3.1.0.
 rm -rf broker && mkdir broker && cd broker

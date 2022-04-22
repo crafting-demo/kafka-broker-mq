@@ -1,0 +1,6 @@
+export TOPIC_REACT="ts-react"
+export TOPIC_GIN="go-gin"
+export TOPIC_EXPRESS="ts-express"
+export TOPIC_RAILS="ruby-rails"
+export TOPIC_KOTLIN="kotlin-spring"
+export TOPIC_DJANGO="py-django"
