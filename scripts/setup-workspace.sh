@@ -19,6 +19,4 @@ sudo apt-get install mysql-client libmysqlclient-dev -y
 ./kafka/get-kafka.sh
 
 # Build go server.
-cd "$ROOT/.."
-rm -rf bin && mkdir bin
-go build -o bin/server cmd/main.go
+./go-server.sh
