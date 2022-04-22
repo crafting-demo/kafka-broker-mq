@@ -10,7 +10,9 @@ daemons:
   kafka:
     run:
       dir: broker
-      cmd: bin/kafka-server-start.sh config/server.properties
+      cmd: |
+        bin/kafka-server-start.sh config/server.properties
+        cd ../scripts && ./kafka-create-topics.sh
   websocket:
     run:
       cmd: bin/server
