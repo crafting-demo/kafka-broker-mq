@@ -1,7 +1,6 @@
 hooks:
   build:
-    dir: scripts
-    cmd: setup-workspace.sh
+    cmd: scripts/setup-workspace.sh
 
 daemons:
   zookeeper:
@@ -14,5 +13,4 @@ daemons:
       cmd: bin/kafka-server-start.sh config/server.properties
   websocket:
     run:
-      dir: bin
-      cmd: server
+      cmd: bin/server
