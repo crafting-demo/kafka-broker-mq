@@ -41,6 +41,7 @@ func (c *Consumer) Run(msgCh chan<- []byte, doneCh chan struct{}) error {
 	if err != nil {
 		return err
 	}
+
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt)
 
