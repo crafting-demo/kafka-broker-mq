@@ -1,10 +1,10 @@
 package websocket
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"time"
+	"os"
+	"os/signal"
 
 	"github.com/crafting-demo/kafka-broker-mq/pkg/kafka"
 	"github.com/gin-gonic/gin"
@@ -48,24 +48,23 @@ func ConsumerHandler(c *gin.Context) {
 	}
 	defer ws.Close()
 
-	msgCh := make(chan []byte)
-	doneCh := make(chan struct{}, 1)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, os.Interrupt)
 
 	consumer := kafka.Consumer{Topic: c.Param("topic")}
-	go consumer.Run(msgCh, doneCh)
+
+	messages, err := consumer.Messages()
+	if err != nil {
+		return
+	}
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-signalCh:
 			return
-		case <-doneCh:
-			return
-		case m := <-msgCh:
-			var msg kafka.Message
-			if err := json.Unmarshal(m, &msg); err == nil {
+		case msg := <-messages:
+			var message kafka.Message
+			if err := json.Unmarshal(msg.Value, &message); err == nil {
 				ws.WriteJSON(msg)
 			}
 		}
