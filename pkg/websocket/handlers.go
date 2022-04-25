@@ -23,14 +23,14 @@ func ProducerHandler(c *gin.Context) {
 	// Upgrade request to websocket protocol.
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println("ProducerHandler", "Failed to upgrade request", err)
+		log.Println("ProducerHandler: failed to upgrade request", err)
 		return
 	}
 	defer ws.Close()
 
 	var msg kafka.Message
 	if err := ws.ReadJSON(&msg); err != nil {
-		log.Println("ProducerHandler", "Failed to read json", err)
+		log.Println("ProducerHandler: failed to read json", err)
 		return
 	}
 
@@ -48,7 +48,7 @@ func ConsumerHandler(c *gin.Context) {
 	// Upgrade request to websocket protocol.
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println("ConsumerHandler", "Failed to upgrade request", err)
+		log.Println("ConsumerHandler: failed to upgrade request", err)
 		return
 	}
 	defer ws.Close()
@@ -57,14 +57,14 @@ func ConsumerHandler(c *gin.Context) {
 
 	conn, err := consumer.New()
 	if err != nil {
-		log.Println("ConsumerHandler", "Failed to create new consumer", err)
+		log.Println("ConsumerHandler: failed to create new consumer", err)
 		return
 	}
 	defer conn.Close()
 
 	partitionConsumer, err := conn.ConsumePartition(consumer.Topic, 0, sarama.OffsetOldest)
 	if err != nil {
-		log.Println("ConsumerHandler", "Failed to create partition consumer", err)
+		log.Println("ConsumerHandler: failed to create partition consumer", err)
 	}
 	defer partitionConsumer.Close()
 
@@ -76,11 +76,12 @@ func ConsumerHandler(c *gin.Context) {
 		case msg := <-partitionConsumer.Messages():
 			var message kafka.Message
 			if err := json.Unmarshal(msg.Value, &message); err != nil {
-				log.Println("ConsumerHandler", "Failed to parse json encoded message", err)
-				ws.WriteJSON(msg.Value)
+				log.Println("ConsumerHandler: failed to parse json encoded message", err)
 				continue
 			}
-			ws.WriteJSON(message)
+			if err := ws.WriteJSON(message); err != nil {
+				log.Println("ConsumerHandler: failed to write json", err)
+			}
 		case <-signals:
 			return
 		}
