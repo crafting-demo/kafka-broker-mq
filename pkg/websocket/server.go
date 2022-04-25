@@ -15,7 +15,7 @@ func Run(ctx Context) {
 	router := gin.Default()
 
 	router.GET("/producer/:topic", ProducerHandler)
-	router.GET("/consumer/:topic", ConsumerHandler)
+	router.GET("/consumer/:topic/:offset", ConsumerHandler)
 
 	router.Run(":" + ctx.Port)
 }

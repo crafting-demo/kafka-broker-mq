@@ -62,7 +62,15 @@ func ConsumerHandler(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	partitionConsumer, err := conn.ConsumePartition(consumer.Topic, 0, sarama.OffsetOldest)
+	var saramaOffset int64
+	offset := c.Param("offset")
+	if offset == "oldest" {
+		saramaOffset = sarama.OffsetOldest
+	} else {
+		saramaOffset = sarama.OffsetNewest
+	}
+
+	partitionConsumer, err := conn.ConsumePartition(consumer.Topic, 0, saramaOffset)
 	if err != nil {
 		log.Println("ConsumerHandler: failed to create partition consumer", err)
 	}
