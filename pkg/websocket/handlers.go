@@ -2,13 +2,13 @@ package websocket
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 
 	"github.com/Shopify/sarama"
 	"github.com/crafting-demo/kafka-broker-mq/pkg/kafka"
+	"github.com/crafting-demo/kafka-broker-mq/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -23,19 +23,27 @@ func ProducerHandler(c *gin.Context) {
 	// Upgrade request to websocket protocol.
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println("ProducerHandler: failed to upgrade request", err)
+		logger.Write("ProducerHandler", "failed to upgrade request", err)
 		return
 	}
 	defer ws.Close()
 
-	var msg kafka.Message
+	var msg Message
 	if err := ws.ReadJSON(&msg); err != nil {
-		log.Println("ProducerHandler: failed to read json", err)
+		logger.Write("ProducerHandler", "failed to read json message", err)
 		return
 	}
 
-	producer := kafka.Producer{Topic: c.Param("topic")}
-	producer.Enqueue(msg)
+	m, err := json.Marshal(msg)
+	if err != nil {
+		logger.Write("ProducerHandler", "failed to marshal json message", err)
+		return
+	}
+
+	var producer kafka.Producer
+	if err := producer.Enqueue(c.Param("topic"), m); err != nil {
+		logger.Write("ProducerHandler", "failed to enqueue message", err)
+	}
 }
 
 func ConsumerHandler(c *gin.Context) {
@@ -48,31 +56,31 @@ func ConsumerHandler(c *gin.Context) {
 	// Upgrade request to websocket protocol.
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println("ConsumerHandler: failed to upgrade request", err)
+		logger.Write("ConsumerHandler", "failed to upgrade request", err)
 		return
 	}
 	defer ws.Close()
 
-	consumer := kafka.Consumer{Topic: c.Param("topic")}
+	var consumer kafka.Consumer
 
 	conn, err := consumer.New()
 	if err != nil {
-		log.Println("ConsumerHandler: failed to create new consumer", err)
+		logger.Write("ConsumerHandler", "failed to create new consumer", err)
 		return
 	}
 	defer conn.Close()
 
 	var saramaOffset int64
 	offset := c.Param("offset")
-	if offset == "oldest" {
-		saramaOffset = sarama.OffsetOldest
-	} else {
+	if offset == "latest" {
 		saramaOffset = sarama.OffsetNewest
+	} else {
+		saramaOffset = sarama.OffsetOldest
 	}
 
-	partitionConsumer, err := conn.ConsumePartition(consumer.Topic, 0, saramaOffset)
+	partitionConsumer, err := conn.ConsumePartition(c.Param("topic"), 0, saramaOffset)
 	if err != nil {
-		log.Println("ConsumerHandler: failed to create partition consumer", err)
+		logger.Write("ConsumerHandler", "failed to create partition consumer", err)
 	}
 	defer partitionConsumer.Close()
 
@@ -82,13 +90,13 @@ func ConsumerHandler(c *gin.Context) {
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var message kafka.Message
+			var message Message
 			if err := json.Unmarshal(msg.Value, &message); err != nil {
-				log.Println("ConsumerHandler: failed to parse json encoded message", err)
+				logger.Write("ConsumerHandler", "failed to parse json encoded message", err)
 				continue
 			}
 			if err := ws.WriteJSON(message); err != nil {
-				log.Println("ConsumerHandler: failed to write json", err)
+				logger.Write("ConsumerHandler", "failed to write json", err)
 			}
 		case <-signals:
 			return
