@@ -97,6 +97,7 @@ func ConsumerHandler(c *gin.Context) {
 			}
 			if err := ws.WriteJSON(message); err != nil {
 				logger.Write("ConsumerHandler", "failed to write json", err)
+				return
 			}
 		case <-signals:
 			return
