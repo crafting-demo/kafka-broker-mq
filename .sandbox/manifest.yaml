@@ -1,0 +1,18 @@
+hooks:
+  build:
+    cmd: scripts/setup-workspace.sh
+
+daemons:
+  zookeeper:
+    run:
+      dir: broker
+      cmd: bin/zookeeper-server-start.sh config/zookeeper.properties
+  kafka:
+    run:
+      dir: broker
+      cmd: |
+        bin/kafka-server-start.sh config/server.properties
+        cd ../scripts/kafka && ./kafka-create-topics.sh
+  websocket:
+    run:
+      cmd: bin/server

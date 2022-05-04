@@ -1,0 +1,6 @@
+export TOPIC_REACT="frontend-typescript-react"
+export TOPIC_GIN="backend-go-gin"
+export TOPIC_EXPRESS="backend-typescript-express"
+export TOPIC_RAILS="backend-ruby-rails"
+export TOPIC_SPRING="backend-kotlin-spring"
+export TOPIC_DJANGO="backend-python-django"
