@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. "${BASH_SOURCE[0]%/*}/config.sh"
+
+PGPASSWORD="$DB_PASS" psql -h "$POSTGRES_SERVICE_HOST" -U "$DB_USER" -d "$DB_NAME" <<EOF
+CREATE TABLE $DB_COLLECTION(
+    uuid uuid PRIMARY KEY NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+)
+EOF
