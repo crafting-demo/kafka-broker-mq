@@ -12,9 +12,6 @@ sudo apt-get install libgmp3-dev -y
 # Install mysql client
 sudo apt-get install mysql-client libmysqlclient-dev -y
 
-# Install postgres client
-sudo apt-get install postgresql-client -y
-
 # Setup/prepare all databases.
 ./db/setup-db.sh
 
