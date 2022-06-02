@@ -14,6 +14,8 @@ import (
 )
 
 func ProducerHandler(c *gin.Context) {
+	// logger.Write("Test Test Crafting")
+
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -23,30 +25,32 @@ func ProducerHandler(c *gin.Context) {
 	// Upgrade request to websocket protocol.
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		logger.Write("ProducerHandler", "failed to upgrade request", err)
+		logger.Writef("ProducerHandler", "failed to upgrade request", err)
 		return
 	}
 	defer ws.Close()
 
 	var msg Message
 	if err := ws.ReadJSON(&msg); err != nil {
-		logger.Write("ProducerHandler", "failed to read json message", err)
+		logger.Writef("ProducerHandler", "failed to read json message", err)
 		return
 	}
 
 	m, err := json.Marshal(msg)
 	if err != nil {
-		logger.Write("ProducerHandler", "failed to marshal json message", err)
+		logger.Writef("ProducerHandler", "failed to marshal json message", err)
 		return
 	}
 
 	var producer kafka.Producer
 	if err := producer.Enqueue(c.Param("topic"), m); err != nil {
-		logger.Write("ProducerHandler", "failed to enqueue message", err)
+		logger.Writef("ProducerHandler", "failed to enqueue message", err)
 	}
 }
 
 func ConsumerHandler(c *gin.Context) {
+	// logger.Write("Test Test Crafting")
+
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -56,7 +60,7 @@ func ConsumerHandler(c *gin.Context) {
 	// Upgrade request to websocket protocol.
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		logger.Write("ConsumerHandler", "failed to upgrade request", err)
+		logger.Writef("ConsumerHandler", "failed to upgrade request", err)
 		return
 	}
 	defer ws.Close()
@@ -65,7 +69,7 @@ func ConsumerHandler(c *gin.Context) {
 
 	conn, err := consumer.New()
 	if err != nil {
-		logger.Write("ConsumerHandler", "failed to create new consumer", err)
+		logger.Writef("ConsumerHandler", "failed to create new consumer", err)
 		return
 	}
 	defer conn.Close()
@@ -80,7 +84,7 @@ func ConsumerHandler(c *gin.Context) {
 
 	partitionConsumer, err := conn.ConsumePartition(c.Param("topic"), 0, saramaOffset)
 	if err != nil {
-		logger.Write("ConsumerHandler", "failed to create partition consumer", err)
+		logger.Writef("ConsumerHandler", "failed to create partition consumer", err)
 	}
 	defer partitionConsumer.Close()
 
@@ -92,11 +96,11 @@ func ConsumerHandler(c *gin.Context) {
 		case msg := <-partitionConsumer.Messages():
 			var message Message
 			if err := json.Unmarshal(msg.Value, &message); err != nil {
-				logger.Write("ConsumerHandler", "failed to parse json encoded message", err)
+				logger.Writef("ConsumerHandler", "failed to parse json encoded message", err)
 				continue
 			}
 			if err := ws.WriteJSON(message); err != nil {
-				logger.Write("ConsumerHandler", "failed to write json", err)
+				logger.Writef("ConsumerHandler", "failed to write json", err)
 				return
 			}
 		case <-signals:
