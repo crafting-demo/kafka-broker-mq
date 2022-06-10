@@ -8,12 +8,15 @@ daemons:
   zookeeper:
     run:
       dir: broker
-      cmd: bin/zookeeper-server-start.sh config/zookeeper.properties
+      cmd: |
+        bin/zookeeper-server-stop.sh
+        bin/zookeeper-server-start.sh config/zookeeper.properties
   kafka:
     run:
       dir: broker
       cmd: |
         sleep 20
+        bin/kafka-server-stop.sh
         bin/kafka-server-start.sh config/server.properties
         cd ../scripts/kafka && ./kafka-create-topics.sh
   websocket:
