@@ -7,9 +7,7 @@ cd "$ROOT"
 sudo apt-get update
 
 # Setup/prepare all databases.
-# Note: use snapshots if available in current org,
-#       or create them for subsequent use.
-# ./db/setup-db.sh
+./db/setup-db.sh
 
 # Download/extract kafka.
 ./kafka/get-kafka.sh

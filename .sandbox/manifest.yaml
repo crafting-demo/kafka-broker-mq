@@ -1,4 +1,5 @@
 hooks:
+  post-checkout:
   build:
     cmd: scripts/setup-workspace.sh
 
