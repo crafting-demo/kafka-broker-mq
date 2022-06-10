@@ -13,7 +13,7 @@ daemons:
     run:
       dir: broker
       cmd: |
-        sleep 20
+        while ! nc -z localhost 2181; do sleep 0.1; done
         bin/kafka-server-start.sh config/server.properties
         cd ../scripts/kafka && ./kafka-create-topics.sh
   websocket:
