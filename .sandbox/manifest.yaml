@@ -1,8 +1,6 @@
 hooks:
-  post-checkout:
-    cmd:
   build:
-    cmd: scripts/setup-workspace.sh
+    cmd: go build -o bin/server cmd/main.go
 
 daemons:
   zookeeper:
