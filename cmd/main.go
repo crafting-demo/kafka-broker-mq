@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/crafting-demo/kafka-broker-mq/pkg/websocket"
@@ -11,9 +10,9 @@ func main() {
 	var ctx websocket.Context
 
 	ctx.Mode = "release"
-	ctx.Port = os.Getenv("KAFKA_SERVICE_PORT_API")
+	ctx.Port = os.Getenv("PORT")
 	if ctx.Port == "" {
-		log.Fatal("KAFKA_SERVICE_PORT_API must be set")
+		ctx.Port = "8080"
 	}
 
 	websocket.Run(ctx)
